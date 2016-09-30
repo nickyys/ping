@@ -8,46 +8,111 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
+  TextInput,
   Text,
-  View
+  View,
+  StatusBar,
+  TouchableHighlight
 } from 'react-native';
 
-class ping extends Component {
+
+//简单封装一个组件
+class CustomButton extends React.Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
+      <TouchableHighlight
+        style={styles.button}
+        underlayColor="#a5a5a5"
+        onPress={this.props.onPress}>
+        <Text style={styles.buttonText}>{this.props.text}</Text>
+      </TouchableHighlight>
+    );
+  }
+}
+
+class ping extends Component {
+  constructor(props){
+    super(props);
+    this.state={
+    };
+  }
+  render() {
+    return (
+      <View style={styles.scene}>
+        <StatusBar
+          backgroundColor='#F4F4F4'
+          translucent={true}
+          hidden={false}
+          animated={true}      
+        />
+        <View style={styles.t1}><Text style={styles.t1Text}>当前网络为4G</Text></View>
+        <View style={styles.t2}><Text style={styles.t2Text}>IP:138.125.66.122 中国梅州</Text></View>
+        <View style={styles.inputBox}>
+        <TextInput
+          style={styles.inputText}
+          onChangeText={(text) => this.setState({text})}
+          value={this.state.text}
+        />
+        </View>
+        <CustomButton text='Ping'/>
+        <View style={styles.p1}><Text>Ping指的是</Text></View>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scene: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#F4F4F4',
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  t1:{
+    flex: 1,margin:0,padding:0,
+    marginTop:48,
+    height:38,
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  t1Text:{margin:0,padding:0,    
+    height:38,
+    lineHeight:38,
+    fontSize: 28,
+    color:'#777777',
+    textAlign:'center'
   },
+  t2:{
+    flex: 1,
+    margin:0,
+    height:38,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  t2Text:{
+    height:38,
+    lineHeight:38,
+    fontSize: 28,
+    color:'#333333',
+    textAlign:'center'
+  },
+  inputBox:{
+    margin: 48,
+    marginTop:68,
+    marginBottom:34,
+    padding:5,
+    borderRadius:15,
+    backgroundColor:'#FFFFFF',
+  },
+  button: {
+    margin: 48,
+    marginTop:0,
+    padding:5,
+    borderRadius:15,
+    backgroundColor:'#3472ff',    
+  },
+  buttonText:{
+    fontSize: 46,
+    color:'#ffffff',
+    textAlign:'center'
+  },
+  
 });
 
 AppRegistry.registerComponent('ping', () => ping);
