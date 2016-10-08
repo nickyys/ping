@@ -7,9 +7,7 @@
 import React, { Component } from 'react';
 import {
   AppRegistry,
-  View,
-  Navigator,
-  ToastAndroid
+  Navigator
 } from 'react-native';
 
 import MainView from './main';
@@ -34,11 +32,11 @@ class ping extends Component {
     switch (route.id) {
       case 'ping':
         return (
-        <PingView navigator={navigator} route={route}/>
+        <PingView navigator={navigator} route={route} ip={route.ip}/>
       );
       default:
         return (
-        <PingView navigator={navigator} route={route} />
+        <MainView navigator={navigator} route={route} />
        );
     }
   }

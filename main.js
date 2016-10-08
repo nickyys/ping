@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, View, Image, Text, TextInput, TouchableHighlight, ToastAndroid, Navigator, BackAndroid } from 'react-native';
+import { AppRegistry, StyleSheet, StatusBar, ListView, View, Image, Text, TextInput, TouchableOpacity, BackAndroid } from 'react-native';
+
+import langsData from './data.json';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -21,13 +23,53 @@ export default class MainView extends Component {
     };
   }
 
+  componentDidMount() {
+    for(var i=0,l=langsData.length;i<l;i++){
+      console.log(langsData[i]);
+    }
+  }
+
   constructor (props) {
     super (props)
     _navigator = this.props.navigator;
     this.state = {
-    txtValue: null,
-    _tips : null,    
-    }
+    txtValue: '',
+    _tipsText: '',
+    _tips: 0,
+    _tipsTop: 1999,
+    _list: 0,
+    _listTop: 1999,
+    dataSource: new ListView.DataSource({
+      rowHasChanged: (row1, row2) => row1 !== row2,
+    }),
+    }    
+  }
+
+  isDomain(value) {
+    var tmp_arr = value.split("."),
+      tmp_len = tmp_arr.length;
+    return (tmp_len < 2) ? false : true;
+  }
+
+  showTips(text){
+    this.setState({_tipsText: text});
+    this.setState({_tips: 1, _tipsTop: 205});
+
+    setTimeout(
+      () => { this.setState({_tips: 0, _tipsTop: 1999}); },
+      50
+    );
+  }
+
+  //呈送数据视图
+  renderData(data) {
+    return (
+      <TouchableOpacity onPress={() => _navigator.push({id: 'show'})}>
+        <View style={styles.container}>
+          <Text style={styles.inputListItem}>{data.text}</Text>
+       </View>
+      </TouchableOpacity>
+    )
   }
 
   render() {
@@ -51,31 +93,54 @@ export default class MainView extends Component {
           onChangeText={(text) => {
           this.state.txtValue = text
           }}
-          value={this.state.txtValue}
+          onBlur ={(text) => {
+          this.setState({_list: 0, _listTop: 1999});
+          this.setState({_tips: 0, _tipsTop: 1999});
+          }}
+          onFocus={(text) => {
+          this.setState({_list: 0, _listTop: 1999});
+          this.setState({_tips: 0, _tipsTop: 1999});
+          }}
           placeholder='请输入IP、网址'
           placeholderTextColor='#CCCCCC'
         />
-        <TouchableHighlight
+        <TouchableOpacity
           style={styles.inputBtn}
-          underlayColor="#a5a5a5"
-          onPress={() => {ToastAndroid.show('你点击了我了~好疼！', ToastAndroid.LONG)}}
+          activeOpacity='0.8'
+          onPress={() => {
+            if(this.state._list==0){
+              //取数据
+              for(var i=0,l=langsData.length;i<l;i++){
+                console.log(langsData[i]);
+              }
+
+              this.setState({_list: 1, _listTop: 205});
+            }else{
+              this.setState({_list: 0, _listTop: 1999});
+            }
+          }}
         >
           <Image style={{width:27,height:16}} source={require('./images/ico_down.png')} />
-        </TouchableHighlight>          
+        </TouchableOpacity>
       </View>
 
-      <TouchableHighlight
+      <TouchableOpacity
         style={styles.button}
+        activeOpacity='0.8'
         onPress={() => {
-          if(this.state.txtValue==null){
-            ToastAndroid.show('提示为空!', ToastAndroid.LONG);
+          if(this.state.txtValue){
+            if(this.isDomain(this.state.txtValue)){
+              _navigator.push({ id: 'ping',ip: this.state.txtValue });
+            }else{
+              this.showTips('输入格式错误');
+            }            
           }else{
-            _navigator.push({ id: 'ping',ip: this.state.txtValue });
+            this.showTips('请输入IP、网址');
           }
         }} 
       >
         <Text style={styles.buttonText}>Ping</Text>
-      </TouchableHighlight>
+      </TouchableOpacity>
 
       <View style={styles.p1}>
         <Image style={styles.p1LT} source={require('./images/sticker.png')} />
@@ -83,15 +148,17 @@ export default class MainView extends Component {
         <Text style={styles.p1Text}>Ping指的是端对端连通，通常用来作为可用性的检查，但是某些病毒木马会强行大量远程执行Ping命令抢占你的网络资源，导致系统变慢。严禁Ping入侵作为大多数防火墙的一个基本功能提供给用户进行选择。通常的情况下你如果不用作服务器或者进行网络测试，可以放心的选中它，保护你的电脑。</Text>
       </View>
 
-      <View style={[styles.hide,styles.inputList]}>
+      <View style={[styles.inputList,{opacity: this.state._list,top: this.state._listTop}]}>
         <Text style={styles.inputList1}>历史记录</Text>
-        <Text style={styles.inputListItem}>192.168.100.50</Text>
-        <Text style={styles.inputListItem}>202.96.128.110</Text>
-        <Text style={styles.inputListItem}>www.bukade.com</Text>
+        <ListView
+          dataSource={this.state.dataSource}
+          renderRow={this.renderData}
+          style={styles.listView}
+         />
       </View>
-      <View style={[styles.hide,styles.tips]} testID = 'debug-tips'>
+      <View style={[styles.tips,{opacity: this.state._tips,top: this.state._tipsTop}]} testID = 'debug-tips'>
         <Image style={{width:124,height:124}} source={require('./images/tips.png')} />
-        <Text style={styles.tipsText}>请输入IP、网址</Text>
+        <Text style={styles.tipsText}>{this.state._tipsText}</Text>
       </View>
     </View>
     )
@@ -99,12 +166,6 @@ export default class MainView extends Component {
 }
 
 const styles = StyleSheet.create({
-  hide:{
-    opacity:0
-  },
-  show:{
-    opacity:1
-  },
   scene: {
     flex: 1,
     backgroundColor: '#F4F4F4',
@@ -179,7 +240,6 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:7,
     left:34,
-    top:1205,
     width:292,
     borderBottomLeftRadius:10,
     borderBottomRightRadius:10,
@@ -212,11 +272,9 @@ const styles = StyleSheet.create({
     textAlign:'center'
   },
   tips:{
-    // visibility:'hidden',
     position:'absolute',
     zIndex:9,
     left:85,
-    top:200,
     padding:20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -224,6 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor:'rgba(0, 0, 0, 0.5)',
   },
   tipsText:{
+    marginTop:10,
     fontSize: 22,
     color:'#FFFFFF',
   }

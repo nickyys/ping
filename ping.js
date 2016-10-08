@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, View, Image, Text, TextInput, TouchableHighlight, ToastAndroid, Navigator, BackAndroid } from 'react-native';
+import { AppRegistry, StyleSheet, StatusBar, ScrollView, View, Image, Text, TouchableOpacity, BackAndroid } from 'react-native';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -14,6 +14,22 @@ BackAndroid.addEventListener('hardwareBackPress', function() {
 
 var _navigator;
 
+//简单封装一个组件
+class CustomButton extends React.Component {
+  render() {
+    return (
+      <View style={styles.flexContainer2}>
+        <View style={styles.cell1}>
+        <Image style={{width:30,height:30}} source={this.props.src} />
+        </View>
+        <View style={styles.cell2}>
+        <Text style={styles.buttonText}>{this.props.text}</Text>
+        </View>
+      </View>
+    );
+  }
+}
+
 export default class PingView extends Component {
   static get defaultProps() {    
     return {
@@ -26,7 +42,6 @@ export default class PingView extends Component {
     _navigator = this.props.navigator;
     this.state = {
     txtValue: null,
-    _tips : null,    
     }
   }
 
@@ -34,7 +49,7 @@ export default class PingView extends Component {
     return (
       <View style={styles.scene}>
       <StatusBar
-        backgroundColor='#F4F4F4'
+        backgroundColor='#FFFFFF'
         barStyle='light-content'
         translucent={true}
         hidden={false}
@@ -42,27 +57,27 @@ export default class PingView extends Component {
       />
       
       <View style={styles.flexContainer}>
-        <View style={styles.cell2}>
-          <TouchableHighlight
+        <View style={[styles.cell1,styles.buttonTop]}>
+          <TouchableOpacity
             onPress={() => _navigator.pop()}
             style={styles.navBarLeftButton}>
-            <Image style={{width:60,height:60}} source={require('./images/back.png')} />
-          </TouchableHighlight>
+            <Image style={{width:40,height:40}} source={require('./images/back.png')} />
+          </TouchableOpacity>
         </View>
         <View style={styles.cell3}>
           <Text style={styles.t1Text}>
-            www.bukade.com
+            {this.props.ip}
           </Text>
           <Text style={styles.t2Text}>
             122.228.200.66
           </Text>
         </View>
-        <View style={styles.cell2}>
-          <TouchableHighlight
+        <View style={[styles.cell1,styles.buttonTop]}>
+          <TouchableOpacity
             onPress={() => _navigator.pop()}
             style={styles.navBarLeftButton}>
-            <Image style={{width:60,height:60}} source={require('./images/refresh.png')} />
-          </TouchableHighlight>
+            <Image style={{width:40,height:40}} source={require('./images/refresh.png')} />
+          </TouchableOpacity>
         </View>
       </View>
       
@@ -94,25 +109,59 @@ export default class PingView extends Component {
       </View>
 
       <View style={styles.flexContainer2}>
-        <View style={styles.cell2}>
+        <View style={styles.cell1}>
           <Text style={styles.title}>
             已发送：24
           </Text>
         </View>
-        <View style={styles.cell2}>
+        <View style={styles.cell1}>
           <Text style={styles.title}>
             已接收：20
           </Text>
         </View>
-        <View style={styles.cell2}>
+        <View style={styles.cell1}>
           <Text style={styles.title}>
             丢失：4
           </Text>
         </View>
-        <View style={styles.cell2}>
+        <View style={styles.cell1}>
           <Text style={styles.title}>
             丢失率：15%
           </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        ref={(scrollView) => { _scrollView = scrollView; }}
+        automaticallyAdjustContentInsets={false}
+        onScroll={() => { console.log('onScroll!'); }}
+        scrollEventThrottle={200}
+        style={styles.scroll}>
+        <View>
+          <Text style={styles.t3Text}>正在 Ping www.bukade.com [122.228.200.66]</Text>
+          <Text style={styles.t3Text}>具有32字节的数据</Text>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=40ms TTL=54</Text>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
+        </View>
+      </ScrollView>
+
+      <View style={[styles.flexContainer2,styles.bottom]}>
+        <View style={[styles.cell1,styles.buttonLeft]}>
+          <CustomButton
+            onPress={() => _navigator.pop()}
+            src={require('./images/save.png')}
+            text='保存图片'
+          />
+        </View>
+        <View style={[styles.cell1,styles.buttonRight]}>
+          <CustomButton
+            onPress={() => _navigator.pop()}
+            src={require('./images/share.png')}
+            text='分享'
+          />
         </View>
       </View>
 
@@ -124,28 +173,42 @@ export default class PingView extends Component {
 const styles = StyleSheet.create({
   scene: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  scroll:{
+    marginTop:10,
+    padding:5,
     backgroundColor: '#F4F4F4',
   },
   flexContainer: {
     flexDirection: 'row',
     marginTop:15,
-    padding:5
+    backgroundColor: '#FFFFFF'
   },
   flexContainer2: {
     flexDirection: 'row',
-    padding:5
+    padding:5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF'
   },
   cell: {
     flex: 1,
     margin: 5,
-    height: 90,
+    height: 80,
     borderRadius:10,
     borderWidth: 1,
     borderColor: '#DDDDDD',
     backgroundColor:'#FFFFFF',
   },
-  cell2: {
+  cell1: {
     flex: 1,
+    margin: 0,
+    
+    backgroundColor:'#FFFFFF',
+  },
+  cell2: {
+    flex: 2,
     margin: 5,
     backgroundColor:'#FFFFFF',
   },
@@ -155,26 +218,55 @@ const styles = StyleSheet.create({
     backgroundColor:'#FFFFFF',
   },
   time: {
-    marginTop:15,
+    marginTop:10,
+    marginBottom:5,
     fontSize: 20,
     textAlign: 'center',
     color: '#333333'
   },
   title: {
-    marginTop:10,
     fontSize: 14,
-    textAlign: 'center',    
+    textAlign: 'center',
     color: '#999999'
   },
   t1Text:{    
     fontSize: 22,
+    fontWeight: 'bold',
     color:'#3472ff',
     textAlign:'center'
   },
   t2Text:{
-    marginTop:5,
     fontSize: 18,
     color:'#3472ff',
     textAlign:'center'
   },
+  t3Text:{
+    paddingTop:5,
+    paddingBottom:5,
+    fontSize: 16,
+    color:'#777777',
+  },
+  p1Text:{
+    paddingTop:5,
+    fontSize:12,
+  },
+  bottom:{
+    borderTopWidth: 1,
+    borderTopColor: '#DDDDDD',
+  },
+  buttonText:{    
+    fontSize: 20,
+  },
+  buttonTop:{
+    marginTop:10,
+  },
+  buttonLeft:{
+    marginLeft:20,
+    borderRightWidth: 1,
+    borderRightColor: '#DDDDDD',
+  },
+  buttonRight:{
+    marginLeft:30,
+  },
+  
 });
