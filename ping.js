@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, StatusBar, ScrollView, View, Image, Text, TouchableOpacity, BackAndroid } from 'react-native';
 
+import langsData from './data.json';
+
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
     return false;
@@ -35,6 +37,12 @@ export default class PingView extends Component {
     return {
       title: 'PingView'      
     };
+  }
+
+  componentDidMount() {
+    for(var i=0,l=langsData.length;i<l;i++){
+      console.log(langsData[i]);
+    }
   }
 
   constructor (props) {

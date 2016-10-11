@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, ListView, View, Image, Text, TextInput, TouchableOpacity, BackAndroid } from 'react-native';
+import { AppRegistry, StyleSheet, StatusBar, NetInfo, ListView, View, Image, Text, TextInput, TouchableOpacity,ToastAndroid, BackAndroid } from 'react-native';
 
 import langsData from './data.json';
 
@@ -24,16 +24,37 @@ export default class MainView extends Component {
   }
 
   componentDidMount() {
-    for(var i=0,l=langsData.length;i<l;i++){
-      console.log(langsData[i]);
-    }
+    NetInfo.isConnected.addEventListener(
+        'change',
+         this._handleConnectivityChange
+    );
+    //检测网络是否连接
+    NetInfo.isConnected.fetch().done(
+        (isConnected) => { this.setState({isConnected}); }
+    );
+    //检测网络连接信息
+     NetInfo.fetch().done(
+        (connectionInfo) => { this.setState({connectionInfo}); }
+    );
+  }
+  componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener(
+        'change',
+        this._handleConnectivityChange
+    );
+  }
+  _handleConnectivityChange(isConnected) {
+       ToastAndroid.show((isConnected ? 'online' : 'offline'),ToastAndroid.SHORT);
   }
 
   constructor (props) {
     super (props)
     _navigator = this.props.navigator;
     this.state = {
+    isConnected: null,
+    connectionInfo:null,
     txtValue: '',
+    src: require('./images/ico_down.png'),
     _tipsText: '',
     _tips: 0,
     _tipsTop: 1999,
@@ -51,25 +72,26 @@ export default class MainView extends Component {
     return (tmp_len < 2) ? false : true;
   }
 
+  submit(value){
+    if(value){
+      if(this.isDomain(value)){
+        _navigator.push({ id: 'ping',ip: value });
+      }else{
+        this.showTips('输入格式错误');
+      }            
+    }else{
+      this.showTips('请输入IP、网址');
+    }
+  }
+
   showTips(text){
     this.setState({_tipsText: text});
     this.setState({_tips: 1, _tipsTop: 205});
 
     setTimeout(
       () => { this.setState({_tips: 0, _tipsTop: 1999}); },
-      50
+      2000
     );
-  }
-
-  //呈送数据视图
-  renderData(data) {
-    return (
-      <TouchableOpacity onPress={() => _navigator.push({id: 'show'})}>
-        <View style={styles.container}>
-          <Text style={styles.inputListItem}>{data.text}</Text>
-       </View>
-      </TouchableOpacity>
-    )
   }
 
   render() {
@@ -83,8 +105,8 @@ export default class MainView extends Component {
         animated={true}
       />
       <View style={styles.t1}>
-        <Text style={styles.t1Text}>当前网络为4G</Text>
-        <Text style={styles.t2Text}>IP:138.125.66.32 中国梅州</Text>
+        <Text style={styles.t1Text}>当前网络为{this.state.connectionInfo}</Text>
+        <Text style={styles.t2Text}>IP:138.125.66.33 中国梅州</Text>
       </View>
       <View style={styles.inputBox}>
         <TextInput
@@ -106,37 +128,28 @@ export default class MainView extends Component {
         />
         <TouchableOpacity
           style={styles.inputBtn}
-          activeOpacity='0.8'
           onPress={() => {
             if(this.state._list==0){
               //取数据
-              for(var i=0,l=langsData.length;i<l;i++){
-                console.log(langsData[i]);
-              }
-
+              this.setState({dataSource: this.state.dataSource.cloneWithRows(langsData)});
+              //显示列表
               this.setState({_list: 1, _listTop: 205});
+              //切换图标
+              this.state.src=require('./images/ico_up.png');
             }else{
               this.setState({_list: 0, _listTop: 1999});
+              this.state.src=require('./images/ico_down.png');
             }
           }}
         >
-          <Image style={{width:27,height:16}} source={require('./images/ico_down.png')} />
+          <Image style={{width:27,height:16}} source={this.state.src} />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity
         style={styles.button}
-        activeOpacity='0.8'
         onPress={() => {
-          if(this.state.txtValue){
-            if(this.isDomain(this.state.txtValue)){
-              _navigator.push({ id: 'ping',ip: this.state.txtValue });
-            }else{
-              this.showTips('输入格式错误');
-            }            
-          }else{
-            this.showTips('请输入IP、网址');
-          }
+          this.submit(this.state.txtValue);
         }} 
       >
         <Text style={styles.buttonText}>Ping</Text>
@@ -151,9 +164,21 @@ export default class MainView extends Component {
       <View style={[styles.inputList,{opacity: this.state._list,top: this.state._listTop}]}>
         <Text style={styles.inputList1}>历史记录</Text>
         <ListView
-          dataSource={this.state.dataSource}
-          renderRow={this.renderData}
           style={styles.listView}
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) =>
+          <TouchableOpacity onPress={() => {
+            this.setState({_list: 0, _listTop: 1999});
+            this.state.src=require('./images/ico_down.png');
+            this.state.txtValue=rowData.text;
+            this.submit(rowData.text);
+          }}
+          >
+            <View style={styles.container}>
+              <Text style={styles.inputListItem}>{rowData.text}</Text>
+            </View>
+          </TouchableOpacity>
+          }
          />
       </View>
       <View style={[styles.tips,{opacity: this.state._tips,top: this.state._tipsTop}]} testID = 'debug-tips'>
