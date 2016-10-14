@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, ScrollView, View, Image, Text, TouchableOpacity, BackAndroid } from 'react-native';
+import { AppRegistry, StyleSheet, StatusBar, ScrollView,ListView, View, Image, Text, TouchableOpacity, BackAndroid } from 'react-native';
 
 import langsData from './data.json';
 
@@ -40,17 +40,40 @@ export default class PingView extends Component {
   }
 
   componentDidMount() {
-    for(var i=0,l=langsData.length;i<l;i++){
-      console.log(langsData[i]);
-    }
+    this.fetchData();
   }
 
   constructor (props) {
     super (props)
     _navigator = this.props.navigator;
     this.state = {
-    txtValue: null,
+    ip:'',
+    min:0,
+    avg:0,
+    max:0,
+    loaded: false,
+    dataSource: new ListView.DataSource({
+      rowHasChanged: (row1, row2) => row1 !== row2,
+    }),
     }
+  }
+
+  fetchData(){
+    fetch('http://ping.aizhan.com/api/client?domain='+this.props.ip)
+    .then((response) => response.json())
+    .then((responseData) => {
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(responseData.result),
+        ip:responseData.ip,
+        min:responseData.min,
+        avg:responseData.avg,
+        max:responseData.max,
+        loaded: true,
+      });
+    })
+    .catch((error) => {
+      console.warn(error);
+    }).done();
   }
 
   render() {
@@ -77,7 +100,7 @@ export default class PingView extends Component {
             {this.props.ip}
           </Text>
           <Text style={styles.t2Text}>
-            122.228.200.66
+            {this.state.ip}
           </Text>
         </View>
         <View style={[styles.cell1,styles.buttonTop]}>
@@ -92,7 +115,7 @@ export default class PingView extends Component {
       <View style={styles.flexContainer2}>
         <View style={styles.cell}>
           <Text style={styles.time}>
-            12ms
+            {this.state.min}ms
           </Text>
           <Text style={styles.title}>
             最小响应时间
@@ -100,7 +123,7 @@ export default class PingView extends Component {
         </View>
         <View style={styles.cell}>
           <Text style={styles.time}>
-            15ms
+            {this.state.avg}ms
           </Text>
           <Text style={styles.title}>
             平均响应时间
@@ -108,7 +131,7 @@ export default class PingView extends Component {
         </View>
         <View style={styles.cell}>
           <Text style={styles.time}>
-            40ms
+            {this.state.max}ms
           </Text>
           <Text style={styles.title}>
             最大响应时间
@@ -146,14 +169,16 @@ export default class PingView extends Component {
         scrollEventThrottle={200}
         style={styles.scroll}>
         <View>
-          <Text style={styles.t3Text}>正在 Ping www.bukade.com [122.228.200.66]</Text>
+          <Text style={styles.t3Text}>正在 Ping www.bukade.com [122.228.200.65]</Text>
           <Text style={styles.t3Text}>具有32字节的数据</Text>
-          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
-          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
-          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
-          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=40ms TTL=54</Text>
-          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=54</Text>
         </View>
+        <ListView
+          style={styles.listView}
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) =>
+          <Text style={styles.p1Text}>来自 122.228.200.66 的回复：字节=32 时间=36ms TTL=12</Text>
+          }
+         />
       </ScrollView>
 
       <View style={[styles.flexContainer2,styles.bottom]}>
