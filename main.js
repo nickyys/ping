@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, NetInfo, ListView, View, Image, Text, TextInput, TouchableOpacity,ToastAndroid, BackAndroid } from 'react-native';
+import { AppRegistry, StyleSheet, StatusBar, ScrollView,  ListView, View, Image, Text, TextInput, TouchableOpacity, BackAndroid, NetInfo, Dimensions } from 'react-native';
 
 import langsData from './data.json';
 
@@ -36,6 +36,7 @@ export default class MainView extends Component {
      NetInfo.fetch().done(
         (connectionInfo) => { this.setState({connectionInfo}); }
     );
+    this.fetchData();
   }
   componentWillUnmount() {
     NetInfo.isConnected.removeEventListener(
@@ -44,7 +45,7 @@ export default class MainView extends Component {
     );
   }
   _handleConnectivityChange(isConnected) {
-       ToastAndroid.show((isConnected ? 'online' : 'offline'),ToastAndroid.SHORT);
+      //ToastAndroid.show((isConnected ? 'online' : 'offline'),ToastAndroid.SHORT);
   }
 
   constructor (props) {
@@ -54,16 +55,32 @@ export default class MainView extends Component {
     isConnected: null,
     connectionInfo:null,
     txtValue: '',
+    city:'',
     src: require('./images/ico_down.png'),
     _tipsText: '',
     _tips: 0,
+    _tipsLeft: 999,
     _tipsTop: 1999,
     _list: 0,
+    _listWidth: 0,
     _listTop: 1999,
     dataSource: new ListView.DataSource({
       rowHasChanged: (row1, row2) => row1 !== row2,
     }),
     }    
+  }
+
+  fetchData(){
+    fetch('http://pv.sohu.com/cityjson?ie=utf-8')
+    .then((response) => response.text())
+    .then((responseData) => {
+      this.setState({
+        city: responseData.replace(/var returnCitySN = {"cip": "/, "IP: ").replace(/", "cid": ".+?", "cname": "/," ").replace(/"};/,""),
+      });
+    })
+    .catch((error) => {
+      console.warn(error);
+    }).done();
   }
 
   isDomain(value) {
@@ -86,10 +103,10 @@ export default class MainView extends Component {
 
   showTips(text){
     this.setState({_tipsText: text});
-    this.setState({_tips: 1, _tipsTop: 205});
+    this.setState({_tips: 1, _tipsLeft: (Dimensions.get('window').width-180)/2, _tipsTop: (Dimensions.get('window').height-180)/2});
 
     setTimeout(
-      () => { this.setState({_tips: 0, _tipsTop: 1999}); },
+      () => { this.setState({_tips: 0,_tipsLeft: 999, _tipsTop: 1999}); },
       2000
     );
   }
@@ -104,9 +121,15 @@ export default class MainView extends Component {
         hidden={false}
         animated={true}
       />
+      <ScrollView
+        ref={(scrollView) => { _scrollView = scrollView; }}
+        automaticallyAdjustContentInsets={false}
+        onScroll={() => { console.log('onScroll!'); }}
+        scrollEventThrottle={200}
+        style={styles.scroll}>
       <View style={styles.t1}>
         <Text style={styles.t1Text}>当前网络为{this.state.connectionInfo}</Text>
-        <Text style={styles.t2Text}>IP:138.125.66.33 中国梅州</Text>
+        <Text style={styles.t2Text}>{this.state.city}</Text>
       </View>
       <View style={styles.inputBox}>
         <TextInput
@@ -133,7 +156,7 @@ export default class MainView extends Component {
               //取数据
               this.setState({dataSource: this.state.dataSource.cloneWithRows(langsData)});
               //显示列表
-              this.setState({_list: 1, _listTop: 205});
+              this.setState({_list: 1, _listTop: 205, _listWidth: Dimensions.get('window').width-68});
               //切换图标
               this.state.src=require('./images/ico_up.png');
             }else{
@@ -161,7 +184,7 @@ export default class MainView extends Component {
         <Text style={styles.p1Text}>Ping指的是端对端连通，通常用来作为可用性的检查，但是某些病毒木马会强行大量远程执行Ping命令抢占你的网络资源，导致系统变慢。严禁Ping入侵作为大多数防火墙的一个基本功能提供给用户进行选择。通常的情况下你如果不用作服务器或者进行网络测试，可以放心的选中它，保护你的电脑。</Text>
       </View>
 
-      <View style={[styles.inputList,{opacity: this.state._list,top: this.state._listTop}]}>
+      <View style={[styles.inputList,{opacity: this.state._list,top: this.state._listTop,width: this.state._listWidth}]}>
         <Text style={styles.inputList1}>历史记录</Text>
         <ListView
           style={styles.listView}
@@ -181,10 +204,11 @@ export default class MainView extends Component {
           }
          />
       </View>
-      <View style={[styles.tips,{opacity: this.state._tips,top: this.state._tipsTop}]} testID = 'debug-tips'>
+      <View style={[styles.tips,{opacity: this.state._tips,left: this.state._tipsLeft,top: this.state._tipsTop}]} testID = 'debug-tips'>
         <Image style={{width:124,height:124}} source={require('./images/tips.png')} />
         <Text style={styles.tipsText}>{this.state._tipsText}</Text>
       </View>
+      </ScrollView>
     </View>
     )
   }
@@ -265,7 +289,6 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:7,
     left:34,
-    width:292,
     borderBottomLeftRadius:10,
     borderBottomRightRadius:10,
     borderWidth: 1,
@@ -299,7 +322,6 @@ const styles = StyleSheet.create({
   tips:{
     position:'absolute',
     zIndex:9,
-    left:85,
     padding:20,
     justifyContent: 'center',
     alignItems: 'center',
