@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity,ToastAndroid, BackAndroid } from 'react-native';
-
-import langsData from './data.json';
+import { AppRegistry, AsyncStorage, StyleSheet, Share, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity, ActivityIndicator, BackAndroid, Dimensions } from 'react-native';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -41,12 +39,16 @@ export default class PingView extends Component {
   }
 
   componentDidMount() {
-    this.fetchData();    
+    this.fetchData();
     this._getStorage();
   }
 
   constructor (props) {
     super (props)
+    this._shareMessage = this._shareMessage.bind(this);
+    this._shareText = this._shareText.bind(this);
+    this._showResult = this._showResult.bind(this);
+
     _navigator = this.props.navigator;
     this.state = {
     bg:'#FFFFFF',
@@ -58,10 +60,47 @@ export default class PingView extends Component {
     min:0,
     avg:0,
     max:0,
-    loaded: false,
+    result: '',
+    animating: true,
     dataSource: new ListView.DataSource({
       rowHasChanged: (row1, row2) => row1 !== row2,
     }),
+    }
+  }
+
+  _shareMessage() {
+    Share.share({
+      message: '我是被分享的本文信息'
+    })
+    .then(this._showResult)
+    .catch((error) => this.setState({result: 'error: ' + error.message}));
+  }
+ 
+  _shareText() {
+    Share.share({
+      message: '我是被分享的本文信息',
+      url: 'http://www.lcode.org',
+      title: 'React Native'
+    }, {
+      dialogTitle: '分享博客地址',
+      excludedActivityTypes: [
+        'com.apple.UIKit.activity.PostToTwitter'
+      ],
+      tintColor: 'green'
+    })
+    .then(this._showResult)
+    .catch((error) => this.setState({result: 'error: ' + error.message}));
+  }
+ 
+  _showResult(result) {
+    if (result.action === Share.sharedAction) {
+      if (result.activityType) {
+        this.setState({result: 'shared with an activityType: ' + result.activityType});
+      } else {
+        this.setState({result: 'shared'});
+      }
+    } else if (result.action === Share.dismissedAction) {
+      this.setState({result: 'dismissed'});
     }
   }
 
@@ -82,9 +121,10 @@ export default class PingView extends Component {
             }
             if (i >= 4) {
               arr.splice(i, 1);
-              ch = this.props.ip+arr.join(',');
+              ch = arr.join(',');
             }
           }
+          ch = this.props.ip+","+value;
         }else{
           ch=this.props.ip;
         }
@@ -121,7 +161,7 @@ export default class PingView extends Component {
           s1:require('./images/back2.png'),
           s2:require('./images/refresh2.png'),
           ip:responseData.ip,
-          loaded: true,
+          animating: false,//隐藏加载中
         });
       }else{
         this.setState({
@@ -131,7 +171,7 @@ export default class PingView extends Component {
           s1:require('./images/back2.png'),
           s2:require('./images/refresh2.png'),
           ip:responseData.ip,
-          loaded: true,
+          animating: false,
         });        
       }
     })
@@ -169,9 +209,11 @@ export default class PingView extends Component {
           </View>
           <View style={[styles.cell1,styles.buttonTop]}>
             <TouchableOpacity
-              onPress={() => {this.fetchData();ToastAndroid.show('正在刷新', ToastAndroid.SHORT)}}
+              onPress={() => {this.fetchData();this.setState({animating: true})}}
               style={styles.navBarLeftButton}>
+              <Text style={{paddingRight:10,textAlign:"right"}}>
               <Image style={{width:40,height:40}} source={this.state.s2} />
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -245,19 +287,29 @@ export default class PingView extends Component {
 
         <View style={[styles.flexContainer2,styles.bottom]}>
           <View style={[styles.cell1,styles.buttonLeft]}>
+            <TouchableOpacity onPress={this._shareMessage}>
             <CustomButton
               onPress={() => _navigator.pop()}
               src={require('./images/save.png')}
               text='保存图片'
             />
+            </TouchableOpacity>
           </View>
           <View style={[styles.cell1,styles.buttonRight]}>
+            <TouchableOpacity onPress={this._shareText}>
             <CustomButton
-              onPress={() => _navigator.pop()}
               src={require('./images/share.png')}
               text='分享'
             />
+            </TouchableOpacity>
           </View>
+        </View>
+
+        <View style={[styles.container,{left:(Dimensions.get('window').width-50)/2,top:(Dimensions.get('window').height-50)/2}]}>
+        <ActivityIndicator
+          animating={this.state.animating}
+          style={[styles.centering, {height: 80}]}
+          size="large" />
         </View>
 
       </View>
@@ -358,6 +410,10 @@ const styles = StyleSheet.create({
   },
   buttonRight:{
     marginLeft:30,
+  },
+  container: {
+    position:'absolute',
+    zIndex:99,
   },
   
 });

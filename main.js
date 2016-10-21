@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView,  ListView, View, Image, Text, TextInput, TouchableOpacity, ToastAndroid,BackAndroid, NetInfo, Dimensions } from 'react-native';
+import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView,  ListView, View, Image, Text, TextInput, TouchableOpacity, BackAndroid, NetInfo, Dimensions } from 'react-native';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -37,7 +37,6 @@ export default class MainView extends Component {
     );    
     //获取IP
     this.fetchData();
-
   }
   componentWillUnmount() {
     NetInfo.isConnected.removeEventListener(
@@ -143,7 +142,7 @@ export default class MainView extends Component {
           this.setState({_list: 0, _listTop: 1999,_tips: 0, _tipsTop: 1999,src:require('./images/ico_down.png')});
           }}
           onFocus={(text) => {
-          this.setState({_list: 0, _listTop: 1999,_tips: 0, _tipsTop: 1999,src:require('./images/ico_down.png')});
+          this.setState({_list: 0, _listTop: 1999,_tips: 0, _tipsTop: 1999,src:require('./images/ico_go.png')});
           }}
           placeholder='请输入IP、网址'
           placeholderTextColor='#CCCCCC'
@@ -156,7 +155,6 @@ export default class MainView extends Component {
               AsyncStorage.getItem(STORAGE_KEY)
                 .then((value) => {
                   if (value !== null){
-                    //取数据
                     arr = new Array;
                     arr = value.split(",");
                     this.setState({dataSource: this.state.dataSource.cloneWithRows(arr)});
