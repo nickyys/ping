@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity, BackAndroid } from 'react-native';
+import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity,ToastAndroid, BackAndroid } from 'react-native';
 
 import langsData from './data.json';
 
@@ -15,6 +15,7 @@ BackAndroid.addEventListener('hardwareBackPress', function() {
 });
 
 var _navigator;
+var STORAGE_KEY = '@ping:key';
 
 //简单封装一个组件
 class CustomButton extends React.Component {
@@ -40,7 +41,8 @@ export default class PingView extends Component {
   }
 
   componentDidMount() {
-    this.fetchData();
+    this.fetchData();    
+    this._getStorage();
   }
 
   constructor (props) {
@@ -63,23 +65,62 @@ export default class PingView extends Component {
     }
   }
 
+  _getStorage() {
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((value) => {
+        ch='';
+        if (value !== null){
+          arr = new Array;
+          arr = value.split(",");
+          for (var i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] == this.props.ip) {
+              arr.splice(0, 0, arr[i]);//新增
+              arr.splice(i + 1, 1);//删除
+              ch = arr.join(',');
+              this._setStorage(ch);
+              return false;
+            }
+            if (i >= 4) {
+              arr.splice(i, 1);
+              ch = this.props.ip+arr.join(',');
+            }
+          }
+        }else{
+          ch=this.props.ip;
+        }
+        this._setStorage(ch);
+      })
+      .catch((error) => {
+        console.warn(error);
+      }).done();
+  }
+
+  _setStorage(value) {    
+    AsyncStorage.setItem(STORAGE_KEY, value)
+      .then(() => {})
+      .catch((error) => {
+        console.warn(error);
+      }).done();
+  }
+
+
   fetchData(){
     fetch('http://10.10.0.78:82/api/client?domain='+this.props.ip)
     .then((response) => response.json())
     .then((responseData) => {
       if(responseData.status!="PING_LOSS"){
-        this.setState({          
+        this.setState({
           dataSource: this.state.dataSource.cloneWithRows(responseData.result),
           min:responseData.min,
           avg:responseData.avg,
-          max:responseData.max,          
+          max:responseData.max,
           
           bg:'#08b35c',//绿色
           c1:'#FFFFFF',
           c2:'#FFFFFF',
           s1:require('./images/back2.png'),
           s2:require('./images/refresh2.png'),
-          ip:responseData.ip,        
+          ip:responseData.ip,
           loaded: true,
         });
       }else{
@@ -89,7 +130,7 @@ export default class PingView extends Component {
           c2:'#FFFFFF',
           s1:require('./images/back2.png'),
           s2:require('./images/refresh2.png'),
-          ip:responseData.ip,        
+          ip:responseData.ip,
           loaded: true,
         });        
       }
@@ -127,8 +168,8 @@ export default class PingView extends Component {
             </Text>
           </View>
           <View style={[styles.cell1,styles.buttonTop]}>
-            <TouchableOpacity style={{textAlign: 'right'}}
-              onPress={() => _navigator.pop()}
+            <TouchableOpacity
+              onPress={() => {this.fetchData();ToastAndroid.show('正在刷新', ToastAndroid.SHORT)}}
               style={styles.navBarLeftButton}>
               <Image style={{width:40,height:40}} source={this.state.s2} />
             </TouchableOpacity>

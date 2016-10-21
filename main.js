@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, StyleSheet, StatusBar, ScrollView,  ListView, View, Image, Text, TextInput, TouchableOpacity, BackAndroid, NetInfo, Dimensions } from 'react-native';
-
-import langsData from './data.json';
+import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView,  ListView, View, Image, Text, TextInput, TouchableOpacity, ToastAndroid,BackAndroid, NetInfo, Dimensions } from 'react-native';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -15,6 +13,7 @@ BackAndroid.addEventListener('hardwareBackPress', function() {
 });
 
 var _navigator;
+var STORAGE_KEY = '@ping:key';
 
 export default class MainView extends Component {
   static get defaultProps() {    
@@ -35,8 +34,10 @@ export default class MainView extends Component {
     //检测网络连接信息
      NetInfo.fetch().done(
         (connectionInfo) => { this.setState({connectionInfo}); }
-    );
+    );    
+    //获取IP
     this.fetchData();
+
   }
   componentWillUnmount() {
     NetInfo.isConnected.removeEventListener(
@@ -139,12 +140,10 @@ export default class MainView extends Component {
           this.state.txtValue = text
           }}
           onBlur ={(text) => {
-          this.setState({_list: 0, _listTop: 1999});
-          this.setState({_tips: 0, _tipsTop: 1999});
+          this.setState({_list: 0, _listTop: 1999,_tips: 0, _tipsTop: 1999,src:require('./images/ico_down.png')});
           }}
           onFocus={(text) => {
-          this.setState({_list: 0, _listTop: 1999});
-          this.setState({_tips: 0, _tipsTop: 1999});
+          this.setState({_list: 0, _listTop: 1999,_tips: 0, _tipsTop: 1999,src:require('./images/ico_down.png')});
           }}
           placeholder='请输入IP、网址'
           placeholderTextColor='#CCCCCC'
@@ -153,8 +152,18 @@ export default class MainView extends Component {
           style={styles.inputBtn}
           onPress={() => {
             if(this.state._list==0){
-              //取数据
-              this.setState({dataSource: this.state.dataSource.cloneWithRows(langsData)});
+              //获取列表
+              AsyncStorage.getItem(STORAGE_KEY)
+                .then((value) => {
+                  if (value !== null){
+                    //取数据
+                    arr = new Array;
+                    arr = value.split(",");
+                    this.setState({dataSource: this.state.dataSource.cloneWithRows(arr)});
+                  }
+                })
+                .catch((error) => {console.warn(error);})
+                .done();
               //显示列表
               this.setState({_list: 1, _listTop: 205, _listWidth: Dimensions.get('window').width-68});
               //切换图标
@@ -193,12 +202,12 @@ export default class MainView extends Component {
           <TouchableOpacity onPress={() => {
             this.setState({_list: 0, _listTop: 1999});
             this.state.src=require('./images/ico_down.png');
-            this.state.txtValue=rowData.text;
-            this.submit(rowData.text);
+            this.state.txtValue=rowData;            
+            this.submit(rowData);
           }}
           >
             <View style={styles.container}>
-              <Text style={styles.inputListItem}>{rowData.text}</Text>
+              <Text style={styles.inputListItem}>{rowData}</Text>
             </View>
           </TouchableOpacity>
           }
