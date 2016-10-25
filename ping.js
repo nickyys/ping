@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, AsyncStorage, StyleSheet, Share, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity, ActivityIndicator, BackAndroid, Dimensions } from 'react-native';
+import { AppRegistry, AsyncStorage, StyleSheet, StatusBar, ScrollView, ListView, View, Image, Text, TouchableOpacity, ToastAndroid, ActivityIndicator, BackAndroid, Dimensions } from 'react-native';
 
 BackAndroid.addEventListener('hardwareBackPress', function() {
   if(_navigator == null){
@@ -11,11 +11,11 @@ BackAndroid.addEventListener('hardwareBackPress', function() {
   _navigator.pop();
   return true;
 });
-
+var WeChat=require('react-native-wechat');
 var _navigator;
 var STORAGE_KEY = '@ping:key';
 
-//简单封装一个组件
+//简单封装组件：底部按钮
 class CustomButton extends React.Component {
   render() {
     return (
@@ -45,9 +45,8 @@ export default class PingView extends Component {
 
   constructor (props) {
     super (props)
-    this._shareMessage = this._shareMessage.bind(this);
-    this._shareText = this._shareText.bind(this);
-    this._showResult = this._showResult.bind(this);
+    //应用注册
+    WeChat.registerApp('wx8d560da3ba038e7e');
 
     _navigator = this.props.navigator;
     this.state = {
@@ -67,43 +66,7 @@ export default class PingView extends Component {
     }),
     }
   }
-
-  _shareMessage() {
-    Share.share({
-      message: '我是被分享的本文信息'
-    })
-    .then(this._showResult)
-    .catch((error) => this.setState({result: 'error: ' + error.message}));
-  }
- 
-  _shareText() {
-    Share.share({
-      message: '我是被分享的本文信息',
-      url: 'http://www.lcode.org',
-      title: 'React Native'
-    }, {
-      dialogTitle: '分享博客地址',
-      excludedActivityTypes: [
-        'com.apple.UIKit.activity.PostToTwitter'
-      ],
-      tintColor: 'green'
-    })
-    .then(this._showResult)
-    .catch((error) => this.setState({result: 'error: ' + error.message}));
-  }
- 
-  _showResult(result) {
-    if (result.action === Share.sharedAction) {
-      if (result.activityType) {
-        this.setState({result: 'shared with an activityType: ' + result.activityType});
-      } else {
-        this.setState({result: 'shared'});
-      }
-    } else if (result.action === Share.dismissedAction) {
-      this.setState({result: 'dismissed'});
-    }
-  }
-
+  //获取历史记录并新增
   _getStorage() {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((value) => {
@@ -134,7 +97,7 @@ export default class PingView extends Component {
         console.warn(error);
       }).done();
   }
-
+  //写入历史记录
   _setStorage(value) {    
     AsyncStorage.setItem(STORAGE_KEY, value)
       .then(() => {})
@@ -287,20 +250,32 @@ export default class PingView extends Component {
 
         <View style={[styles.flexContainer2,styles.bottom]}>
           <View style={[styles.cell1,styles.buttonLeft]}>
-            <TouchableOpacity onPress={this._shareMessage}>
-            <CustomButton
-              onPress={() => _navigator.pop()}
+            <TouchableOpacity onPress={() => _navigator.pop()}>
+            <CustomButton              
               src={require('./images/save.png')}
               text='保存图片'
             />
             </TouchableOpacity>
           </View>
           <View style={[styles.cell1,styles.buttonRight]}>
-            <TouchableOpacity onPress={this._shareText}>
-            <CustomButton
-              src={require('./images/share.png')}
-              text='分享'
-            />
+            <TouchableOpacity onPress={() => {
+              WeChat.isWXAppInstalled()
+                .then((isInstalled) => {
+                  if (isInstalled) {
+                    WeChat.shareToSession({type: 'text', description: '测试微信好友分享文本'})
+                    .catch((error) => {
+                      ToastAndroid.show(error.message,ToastAndroid.SHORT);
+                    });
+                  } else {
+                    ToastAndroid.show('没有安装微信软件，请您安装微信之后再试',ToastAndroid.SHORT);
+                  }
+                });
+              }}
+              >
+              <CustomButton
+                src={require('./images/share.png')}
+                text='分享'
+              />
             </TouchableOpacity>
           </View>
         </View>

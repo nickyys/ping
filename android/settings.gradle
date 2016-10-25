@@ -1,0 +1,6 @@
+rootProject.name = 'ping'
+
+include ':app'
+include ':RCTWeChat'
+
+project(':RCTWeChat').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-wechat/android')
