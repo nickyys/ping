@@ -16,9 +16,9 @@ var _navigator;
 var STORAGE_KEY = '@ping:key';
 
 export default class MainView extends Component {
-  static get defaultProps() {    
+  static get defaultProps() {
     return {
-      title: 'MainView'      
+      title: 'MainView'
     };
   }
 
@@ -34,7 +34,7 @@ export default class MainView extends Component {
     //检测网络连接信息
      NetInfo.fetch().done(
         (connectionInfo) => { this.setState({connectionInfo}); }
-    );    
+    );
     //获取IP
     this.fetchData();
   }
@@ -67,7 +67,7 @@ export default class MainView extends Component {
     dataSource: new ListView.DataSource({
       rowHasChanged: (row1, row2) => row1 !== row2,
     }),
-    }    
+    }
   }
 
   fetchData(){
@@ -95,7 +95,7 @@ export default class MainView extends Component {
         _navigator.push({ id: 'ping',ip: value });
       }else{
         this.showTips('输入格式错误');
-      }            
+      }
     }else{
       this.showTips('请输入IP、网址');
     }
@@ -135,6 +135,7 @@ export default class MainView extends Component {
         <TextInput
           style={styles.inputText}
           autoCapitalize="none"
+          underlineColorAndroid="transparent"
           onChangeText={(text) => {
           this.state.txtValue = text
           }}
@@ -180,7 +181,7 @@ export default class MainView extends Component {
         style={styles.button}
         onPress={() => {
           this.submit(this.state.txtValue);
-        }} 
+        }}
       >
         <Text style={styles.buttonText}>Ping</Text>
       </TouchableOpacity>
@@ -200,7 +201,7 @@ export default class MainView extends Component {
           <TouchableOpacity onPress={() => {
             this.setState({_list: 0, _listTop: 1999});
             this.state.src=require('./images/ico_down.png');
-            this.state.txtValue=rowData;            
+            this.state.txtValue=rowData;
             this.submit(rowData);
           }}
           >
@@ -227,11 +228,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F4F4',
   },
   t1:{
-    marginTop:34,    
+    marginTop:34,
     borderBottomWidth: 1,
     borderBottomColor: '#DDDDDD',
   },
-  t1Text:{    
+  t1Text:{
     fontSize: 22,
     color:'#777777',
     textAlign:'center'
@@ -274,8 +275,9 @@ const styles = StyleSheet.create({
     position:'relative',
     margin:34,
     marginBottom:0,
+    height:72,
     paddingLeft:5,
-    paddingRight:5,
+    justifyContent: 'center',
     borderRadius:10,
     borderWidth: 1,
     borderColor: '#DDDDDD',
@@ -300,7 +302,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius:10,
     borderWidth: 1,
     borderTopWidth:0,
-    borderColor: '#DDDDDD',    
+    borderColor: '#DDDDDD',
     backgroundColor:'#FFFFFF',
   },
   inputList1:{
@@ -316,7 +318,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#DDDDDD',
   },
   button: {
-    margin: 34,    
+    margin: 34,
     padding:5,
     borderRadius:10,
     backgroundColor:'#3472ff',

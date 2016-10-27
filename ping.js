@@ -32,9 +32,9 @@ class CustomButton extends React.Component {
 }
 
 export default class PingView extends Component {
-  static get defaultProps() {    
+  static get defaultProps() {
     return {
-      title: 'PingView'      
+      title: 'PingView'
     };
   }
 
@@ -46,7 +46,7 @@ export default class PingView extends Component {
   constructor (props) {
     super (props)
     //应用注册
-    WeChat.registerApp('wx8d560da3ba038e7e');
+    WeChat.registerApp('wxa989d16fddd368c9');
 
     _navigator = this.props.navigator;
     this.state = {
@@ -98,7 +98,7 @@ export default class PingView extends Component {
       }).done();
   }
   //写入历史记录
-  _setStorage(value) {    
+  _setStorage(value) {
     AsyncStorage.setItem(STORAGE_KEY, value)
       .then(() => {})
       .catch((error) => {
@@ -117,7 +117,7 @@ export default class PingView extends Component {
           min:responseData.min,
           avg:responseData.avg,
           max:responseData.max,
-          
+
           bg:'#08b35c',//绿色
           c1:'#FFFFFF',
           c2:'#FFFFFF',
@@ -128,14 +128,14 @@ export default class PingView extends Component {
         });
       }else{
         this.setState({
-          bg:'#ff2a2a',//红色 #f98001//橙色        
+          bg:'#ff2a2a',//红色 #f98001//橙色
           c1:'#FFFFFF',
           c2:'#FFFFFF',
           s1:require('./images/back2.png'),
           s2:require('./images/refresh2.png'),
           ip:responseData.ip,
           animating: false,
-        });        
+        });
       }
     })
     .catch((error) => {
@@ -153,7 +153,7 @@ export default class PingView extends Component {
           hidden={false}
           animated={true}
         />
-        
+
         <View style={styles.flexContainer}>
           <View style={[styles.cell1,styles.buttonTop]}>
             <TouchableOpacity
@@ -180,7 +180,7 @@ export default class PingView extends Component {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.flexContainer2}>
           <View style={styles.cell}>
             <Text style={styles.time}>
@@ -251,7 +251,7 @@ export default class PingView extends Component {
         <View style={[styles.flexContainer2,styles.bottom]}>
           <View style={[styles.cell1,styles.buttonLeft]}>
             <TouchableOpacity onPress={() => _navigator.pop()}>
-            <CustomButton              
+            <CustomButton
               src={require('./images/save.png')}
               text='保存图片'
             />
@@ -303,14 +303,14 @@ const styles = StyleSheet.create({
   },
   flexContainer: {
     flexDirection: 'row',
-    marginTop:15    
+    marginTop:15
   },
   flexContainer2: {
     flexDirection: 'row',
     padding:5,
     justifyContent: 'center',
     alignItems: 'center'
-    
+
   },
   cell: {
     flex: 1,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#999999'
   },
-  t1Text:{    
+  t1Text:{
     fontSize: 22,
     fontWeight: 'bold',
     color:'#3472ff',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#DDDDDD',
     backgroundColor: '#FFFFFF'
   },
-  buttonText:{    
+  buttonText:{
     fontSize: 20,
   },
   buttonTop:{
@@ -390,5 +390,5 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:99,
   },
-  
+
 });
